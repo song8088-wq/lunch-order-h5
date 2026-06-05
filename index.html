@@ -272,13 +272,23 @@ async function loadFromCloud() {
 async function saveToCloud(data) {
   syncIndicator(true)
   try {
+    // 先拉云端最新数据，合并后再写入，防止覆盖其他周数据
+    let cloudData = {}
+    try {
+      const getRes = await fetch(BIN_URL + '/latest', { cache: 'no-store', headers: { 'X-Master-Key': MASTER_KEY } })
+      if (getRes.ok) {
+        const json = await getRes.json()
+        cloudData = json.record || {}
+      }
+    } catch(e) {}
+    const merged = Object.assign({}, cloudData, data)
     const res = await fetch(BIN_URL, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         'X-Master-Key': MASTER_KEY
       },
-      body: JSON.stringify(data)
+      body: JSON.stringify(merged)
     })
     if (!res.ok) {
       toast('保存失败，请检查网络')
@@ -622,4 +632,3 @@ init()
 </script>
 </body>
 </html>
- 

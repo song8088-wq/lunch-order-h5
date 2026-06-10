@@ -27,16 +27,24 @@
   .tab { flex: 1; text-align: center; padding: 14px 0; font-size: 15px; color: var(--text-light); cursor: pointer; border-bottom: 2px solid transparent; transition: all .2s; }
   .tab.active { color: var(--orange); border-bottom-color: var(--orange); font-weight: 600; }
 
+  /* 顶部用户栏 */
+  .user-bar { display: flex; align-items: center; justify-content: flex-end; padding: 8px 16px; background: var(--white); border-bottom: 1px solid var(--border); gap: 8px; font-size: 13px; }
+  .user-bar .user-label { color: var(--text-light); }
+  .user-bar .user-name { color: var(--orange); font-weight: 600; }
+  .user-bar .change-btn { padding: 4px 10px; border: 1px solid var(--orange); color: var(--orange); background: var(--white); border-radius: 20px; font-size: 12px; cursor: pointer; }
+
   .page { display: none; padding: 16px 16px 100px; max-width: 600px; margin: 0 auto; }
   .page.active { display: block; }
 
+  /* 登录弹窗 */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
   .modal-overlay.show { display: flex; }
   .modal { background: var(--white); border-radius: var(--radius); padding: 32px 24px; width: 100%; max-width: 360px; }
-  .modal h3 { font-size: 18px; margin-bottom: 16px; text-align: center; }
-  .modal input { width: 100%; padding: 12px 16px; border: 1.5px solid #ddd; border-radius: 10px; font-size: 16px; outline: none; transition: border-color .2s; }
-  .modal input:focus { border-color: var(--orange); }
-  .modal-btn { width: 100%; padding: 13px; background: var(--orange); color: #fff; border: none; border-radius: 10px; font-size: 16px; cursor: pointer; margin-top: 16px; font-weight: 600; }
+  .modal h3 { font-size: 18px; margin-bottom: 8px; text-align: center; }
+  .modal p { font-size: 13px; color: var(--text-light); text-align: center; margin-bottom: 20px; }
+  .name-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .name-btn { padding: 14px 8px; border: 2px solid var(--border); background: var(--white); border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; text-align: center; transition: all .15s; color: var(--text); }
+  .name-btn:active, .name-btn:hover { border-color: var(--orange); background: var(--orange-light); color: var(--orange); }
 
   .week-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
   .week-nav-btn { width: 40px; height: 40px; border: 1px solid var(--border); background: var(--white); border-radius: 50%; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
@@ -44,7 +52,7 @@
   .week-title { font-size: 15px; font-weight: 600; }
   .week-title span { color: var(--orange); }
 
-  .day-card { background: var(--white); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--shadow); display: flex; align-items: center; gap: 12px; }
+  .day-card { background: var(--white); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--shadow); display: flex; align-items: flex-start; gap: 12px; }
   .day-card.work { border-left: 4px solid var(--green); }
   .day-card.holiday { border-left: 4px solid var(--red); }
   .day-card.today { box-shadow: 0 0 0 2px var(--orange), var(--shadow); }
@@ -56,7 +64,7 @@
   .status-tag.work { background: var(--green-bg); color: var(--green); }
   .status-tag.holiday { background: var(--red-bg); color: var(--red); }
 
-  .day-center { flex: 1; display: flex; align-items: center; justify-content: center; gap: 12px; }
+  .day-center { flex: 1; display: flex; align-items: center; justify-content: center; gap: 12px; padding-top: 4px; }
   .btn-count { width: 36px; height: 36px; border-radius: 50%; border: none; font-size: 20px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform .1s; }
   .btn-count:active { transform: scale(0.92); }
   .btn-m { background: var(--red-bg); color: var(--red); }
@@ -68,7 +76,14 @@
   .note-input { width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: 8px; font-size: 13px; outline: none; background: var(--bg); transition: border-color .2s; }
   .note-input:focus { border-color: var(--orange); background: #fff; }
   .note-input.has-note { border-color: var(--orange-light); background: var(--orange-light); }
-  .editor-tag { font-size: 11px; color: #999; margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* 编辑历史标签区 */
+  .editor-history { margin-top: 8px; padding-top: 8px; border-top: 1px dashed var(--border); }
+  .editor-history-title { font-size: 10px; color: #bbb; margin-bottom: 4px; }
+  .editor-record { display: flex; align-items: center; gap: 4px; font-size: 11px; margin-bottom: 3px; flex-wrap: wrap; }
+  .editor-name-chip { background: var(--orange-light); color: var(--orange); padding: 1px 7px; border-radius: 20px; font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .editor-time { color: #bbb; font-size: 10px; white-space: nowrap; }
+  .editor-action { color: #999; font-size: 10px; }
 
   .summary { background: var(--white); border-radius: var(--radius); padding: 20px; margin-top: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; box-shadow: var(--shadow); }
   .sum-item { text-align: center; }
@@ -89,8 +104,8 @@
   .btn-export:active { background: var(--orange-light); }
 
   .toast { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.75); color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 15px; z-index: 200; display: none; pointer-events: none; }
-  .toast.show { display: block; animation: fadeToast .5s ease forwards; animation-delay: 1.5s; }
-  @keyframes fadeToast { 0%{opacity:0;transform:translate(-50%,-50%) scale(0.8)} 20%{opacity:1;transform:translate(-50%,-50%) scale(1)} 80%{opacity:1} 100%{opacity:0} }
+  .toast.show { display: block; animation: fadeToast 2s ease forwards; }
+  @keyframes fadeToast { 0%{opacity:0;transform:translate(-50%,-50%) scale(0.9)} 10%{opacity:1;transform:translate(-50%,-50%) scale(1)} 80%{opacity:1} 100%{opacity:0} }
 
   .month-tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
   .month-tab { padding: 6px 14px; border-radius: 20px; font-size: 13px; background: var(--white); border: 1px solid var(--border); cursor: pointer; white-space: nowrap; flex-shrink: 0; }
@@ -102,15 +117,16 @@
   .stat-card .lbl { font-size: 12px; color: var(--text-light); margin-top: 4px; }
 
   .month-table { background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); overflow: hidden; }
-  .mt-head, .mt-row { display: grid; grid-template-columns: 1fr 60px 60px 80px; padding: 12px 16px; font-size: 13px; align-items: center; }
-  .mt-head { background: var(--bg); font-weight: 600; color: var(--text-light); font-size: 12px; }
+  .mt-head, .mt-row { display: grid; grid-template-columns: 1fr 50px 50px 1fr; padding: 10px 14px; font-size: 13px; align-items: start; }
+  .mt-head { background: var(--bg); font-weight: 600; color: var(--text-light); font-size: 12px; align-items: center; }
   .mt-row { border-top: 1px solid var(--border); }
   .mt-row.holiday { opacity: 0.6; }
   .mt-row.today-row { background: var(--orange-light); }
   .mt-date { font-size: 12px; color: var(--text-light); }
-  .mt-label { }
   .mt-count { font-weight: 700; }
-  .mt-editor { font-size: 11px; color: #999; }
+  .mt-editors { font-size: 11px; line-height: 1.6; }
+  .mt-editors .e-chip { display: inline-block; background: var(--orange-light); color: var(--orange); padding: 0 6px; border-radius: 10px; font-size: 10px; margin-right: 2px; }
+  .mt-editors .e-time { color: #bbb; font-size: 10px; }
   .mt-empty { text-align: center; color: #ccc; padding: 40px; font-size: 14px; }
 
   .editor-list { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 16px; padding: 16px; background: var(--white); border-radius: var(--radius); box-shadow: var(--shadow); }
@@ -124,6 +140,13 @@
 <body>
 
 <div class="sync-indicator" id="sync-indicator">同步中...</div>
+
+<!-- 顶部用户栏 -->
+<div class="user-bar" id="user-bar">
+  <span class="user-label">当前用户：</span>
+  <span class="user-name" id="current-user-name">未登录</span>
+  <button class="change-btn" onclick="showNameModal()">切换</button>
+</div>
 
 <div class="tabs">
   <div class="tab active" id="tab-week" onclick="switchTab('week')">本周订餐</div>
@@ -145,7 +168,7 @@
   <div class="legend">
     <div class="legend-item"><div class="dot dot-work"></div><span>绿色「班」= 调休上班日，汇总统计</span></div>
     <div class="legend-item"><div class="dot dot-holiday"></div><span>红色「休」= 节假日/周末，份数可填但不计入汇总</span></div>
-    <div class="legend-item"><span style="font-size:12px;color:#bbb;">点击「班/休」切换 · 谁编辑谁留痕</span></div>
+    <div class="legend-item"><span style="font-size:12px;color:#bbb;">点击「班/休」切换 · 每日精准留痕</span></div>
   </div>
 </div>
 
@@ -161,11 +184,12 @@
 
 <div class="toast" id="toast"></div>
 
+<!-- 登录弹窗：固定人员列表 -->
 <div class="modal-overlay" id="name-modal">
   <div class="modal">
-    <h3>请输入你的名字</h3>
-    <input type="text" id="name-input" placeholder="例如：张三" maxlength="20">
-    <button class="modal-btn" onclick="confirmName()">确定</button>
+    <h3>选择你的名字</h3>
+    <p>请选择你的名字才能编辑订餐数据</p>
+    <div class="name-list" id="name-list"></div>
   </div>
 </div>
 
@@ -174,6 +198,9 @@
 const BIN_ID = '69e6e78faaba8821971ec397'
 const MASTER_KEY = '$2a$10$eKT4YfZCLgRrnlC1LCpNrOh9hRQtOVcP2dTU1Yh0dLTpOac/49i9y'
 const BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID
+
+// 固定人员名单
+const ALLOWED_USERS = ['曹思思','沈磊','俞丹丹','薛飞','钟清元','朱世荣','宋扬','陈敏']
 
 const HOLIDAYS = [
   '2026-01-01','2026-01-26','2026-01-27','2026-01-28','2026-01-29','2026-01-30','2026-01-31',
@@ -236,22 +263,29 @@ function toast(msg) {
   t.classList.remove('show')
   void t.offsetWidth
   t.classList.add('show')
+  setTimeout(() => t.classList.remove('show'), 2000)
 }
 function fmtTime(d) {
-  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0') + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0')
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0')
+    + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0')
 }
 function syncIndicator(show) {
   const el = document.getElementById('sync-indicator')
   el.classList.toggle('show', show)
 }
 
-// ===== 数据层：jsonbin.io 云存储 =====
+// ===== 数据层 =====
 let allOrders = {}
 let editorName = localStorage.getItem('lunch_editor') || ''
 let currentWeekMonday = getMondayOf(new Date())
 let currentMonth = new Date().getMonth()
 let currentYear = new Date().getFullYear()
-let localCache = null // 内存缓存
+let localCache = null
+
+// 验证登录用户是否合法
+function isValidUser(name) {
+  return ALLOWED_USERS.includes(name)
+}
 
 async function loadFromCloud() {
   try {
@@ -272,7 +306,6 @@ async function loadFromCloud() {
 async function saveToCloud(data) {
   syncIndicator(true)
   try {
-    // 先拉云端最新数据，合并后再写入，防止覆盖其他周数据
     let cloudData = {}
     try {
       const getRes = await fetch(BIN_URL + '/latest', { cache: 'no-store', headers: { 'X-Master-Key': MASTER_KEY } })
@@ -281,7 +314,24 @@ async function saveToCloud(data) {
         cloudData = json.record || {}
       }
     } catch(e) {}
-    const merged = Object.assign({}, cloudData, data)
+    // 深度合并：对每个日期，合并编辑历史，不丢弃云端记录
+    const merged = Object.assign({}, cloudData)
+    for (const date of Object.keys(data)) {
+      if (!merged[date]) {
+        merged[date] = data[date]
+      } else {
+        // 合并编辑历史：云端 + 本地新增，去重后按时间排序
+        const cloudEditors = merged[date].editHistory || []
+        const localEditors = data[date].editHistory || []
+        const allEditors = [...cloudEditors]
+        for (const le of localEditors) {
+          const exists = allEditors.some(ce => ce.name === le.name && ce.time === le.time)
+          if (!exists) allEditors.push(le)
+        }
+        allEditors.sort((a,b) => a.time.localeCompare(b.time))
+        merged[date] = Object.assign({}, merged[date], data[date], { editHistory: allEditors })
+      }
+    }
     const res = await fetch(BIN_URL, {
       method: 'PUT',
       headers: {
@@ -303,20 +353,38 @@ function getOrder(date) {
   return allOrders[date] || null
 }
 
+// 核心改进：setOrder 只给指定日期追加操作记录，不影响其他天
 function setOrder(date, data) {
   const now = new Date()
   const t = fmtTime(now)
-  const prev = allOrders[date] || {}
-  const prevEditors = prev.lastEditor || []
-  prevEditors.push({ name: editorName, time: t })
-  if (prevEditors.length > 3) prevEditors.splice(0, prevEditors.length - 3)
-  allOrders[date] = Object.assign({}, prev, data, { lastEditor: prevEditors, updatedAt: now.toISOString() })
-  localCache = Object.assign({}, allOrders)
+  const prev = allOrders[date] ? JSON.parse(JSON.stringify(allOrders[date])) : {}
+  // editHistory：追加本次操作，不覆盖历史
+  const history = prev.editHistory || []
+  // 操作描述
+  let action = ''
+  if (data.count !== undefined) {
+    const prevCount = prev.count || 0
+    if (data.count > prevCount) action = '+' + (data.count - prevCount) + '份'
+    else if (data.count < prevCount) action = '-' + (prevCount - data.count) + '份'
+    else action = '改备注'
+  }
+  if (data.isWorkDay !== undefined && data.isWorkDay !== prev.isWorkDay) {
+    action = data.isWorkDay ? '改为班' : '改为休'
+  }
+  // 追加记录（同一人同一分钟内合并为一条，避免滑动时刷屏）
+  const lastRecord = history[history.length - 1]
+  if (lastRecord && lastRecord.name === editorName && lastRecord.time === t) {
+    lastRecord.action = action || lastRecord.action
+  } else {
+    history.push({ name: editorName, time: t, action: action || '编辑' })
+  }
+  allOrders[date] = Object.assign({}, prev, data, { editHistory: history, updatedAt: now.toISOString() })
+  if (!localCache) localCache = {}
+  localCache[date] = allOrders[date]
 }
 
 // ===== 界面渲染 =====
 async function renderWeek() {
-  // 加载云端数据
   if (!localCache) {
     document.getElementById('week-days').innerHTML = '<div class="loading">加载云端数据...</div>'
     allOrders = await loadFromCloud()
@@ -327,18 +395,17 @@ async function renderWeek() {
   const monday = new Date(currentWeekMonday)
   const days = getWeekDays(monday)
 
-  // 填充已保存的数据
   days.forEach(day => {
     const saved = getOrder(day.date)
     if (saved) {
       day.count = saved.count || 0
       day.note = saved.note || ''
       day.isWorkDay = saved.isWorkDay !== undefined ? saved.isWorkDay : day.isWorkDay
-      day.lastEditor = saved.lastEditor || []
+      day.editHistory = saved.editHistory || []
     } else {
       day.count = 0
       day.note = ''
-      day.lastEditor = []
+      day.editHistory = []
     }
   })
 
@@ -353,10 +420,22 @@ async function renderWeek() {
     const cardClass = 'day-card ' + day.status + (isToday ? ' today' : '')
     const statusLabel = day.isWorkDay ? '班' : '休'
     const statusClass = day.isWorkDay ? 'work' : 'holiday'
-    const lastEditor = day.lastEditor && day.lastEditor.length > 0
-      ? day.lastEditor[day.lastEditor.length - 1].name + ' ' + day.lastEditor[day.lastEditor.length - 1].time.split(' ')[1]
-      : ''
     const noteVal = day.note ? 'value="' + day.note.replace(/"/g,'&quot;') + '"' : 'placeholder="备注"'
+
+    // 编辑历史显示：最近5条，每条独立一行，显示操作人+时间+动作
+    const historyHtml = day.editHistory && day.editHistory.length > 0
+      ? `<div class="editor-history">
+          <div class="editor-history-title">修改记录</div>
+          ${day.editHistory.slice(-5).reverse().map(r =>
+            `<div class="editor-record">
+              <span class="editor-name-chip">${r.name}</span>
+              <span class="editor-action">${r.action || '编辑'}</span>
+              <span class="editor-time">${r.time.split(' ')[1]}</span>
+            </div>`
+          ).join('')}
+        </div>`
+      : ''
+
     return `<div class="${cardClass}" data-idx="${i}">
       <div class="day-left">
         <div class="day-name">${day.label}</div>
@@ -370,7 +449,7 @@ async function renderWeek() {
       </div>
       <div class="day-right">
         <input class="note-input ${day.note?'has-note':''}" ${noteVal} data-idx="${i}" oninput="onNoteInput(this,${i})" maxlength="100">
-        ${lastEditor ? '<div class="editor-tag">' + lastEditor + '</div>' : ''}
+        ${historyHtml}
       </div>
     </div>`
   }).join('')
@@ -399,6 +478,7 @@ function updateSummary() {
 
 // ===== 交互 =====
 function changeCount(idx, delta) {
+  if (!isValidUser(editorName)) { showNameModal(); return }
   const monday = new Date(currentWeekMonday)
   const days = getWeekDays(monday)
   const saved = getOrder(days[idx].date)
@@ -411,6 +491,7 @@ function changeCount(idx, delta) {
 }
 
 function toggleStatus(idx) {
+  if (!isValidUser(editorName)) { showNameModal(); return }
   const monday = new Date(currentWeekMonday)
   const days = getWeekDays(monday)
   const saved = getOrder(days[idx].date)
@@ -426,6 +507,7 @@ function toggleStatus(idx) {
 }
 
 function onNoteInput(el, idx) {
+  if (!isValidUser(editorName)) { showNameModal(); return }
   const val = el.value
   const monday = new Date(currentWeekMonday)
   const days = getWeekDays(monday)
@@ -438,25 +520,10 @@ function onNoteInput(el, idx) {
 }
 
 async function saveData() {
-  if (!editorName) { showNameModal(); return }
-  // 合并本地+本周数据
-  const monday = new Date(currentWeekMonday)
-  const days = getWeekDays(monday)
-  const t = fmtTime(new Date())
-  days.forEach(day => {
-    const saved = getOrder(day.date)
-    if (!saved) return
-    const prevEditors = saved.lastEditor || []
-    const alreadyHas = prevEditors.some(e => e.name === editorName && e.time.startsWith(t.split(' ')[0]))
-    if (!alreadyHas) {
-      prevEditors.push({ name: editorName, time: t })
-      if (prevEditors.length > 3) prevEditors.splice(0, prevEditors.length - 3)
-      allOrders[day.date] = Object.assign({}, saved, { lastEditor: prevEditors })
-    }
-  })
+  if (!isValidUser(editorName)) { showNameModal(); return }
   await saveToCloud(allOrders)
-  localCache = Object.assign({}, allOrders)
-  toast(editorName + ' 已保存')
+  localCache = JSON.parse(JSON.stringify(allOrders))
+  toast(editorName + ' 已保存 ✓')
   renderWeek()
 }
 
@@ -464,7 +531,7 @@ function prevWeek() {
   const d = new Date(currentWeekMonday)
   d.setDate(d.getDate() - 7)
   currentWeekMonday = d
-  localCache = null // 切周时重新加载
+  localCache = null
   renderWeek()
 }
 function nextWeek() {
@@ -510,27 +577,16 @@ function selectMonth(y, m) {
 }
 
 async function renderStats() {
-  // 重新加载云端数据确保最新
   const data = await loadFromCloud()
   allOrders = data
 
-  const monthAll = Object.keys(allOrders).filter(d => {
-    const dt = new Date(d)
-    return dt.getFullYear() === currentYear && dt.getMonth() === currentMonth
-  }).sort()
-
-  if (monthAll.length === 0) {
-    document.getElementById('stats-content').innerHTML = '<div class="mt-empty">本月暂无数据</div>'
-    return
-  }
-
+  const today = formatDate(new Date())
   const first = new Date(currentYear, currentMonth, 1)
   const last = new Date(currentYear, currentMonth + 1, 0)
   const days = []
   for (let d = new Date(first); d <= last; d.setDate(d.getDate() + 1)) {
     const ds = formatDate(d)
     const saved = allOrders[ds]
-    const dayObj = getWeekDays(first).find(x => x.date === ds) || { isWorkDay: true }
     const status = getDayStatus(ds, d)
     const isWorkDay = saved && saved.isWorkDay !== undefined ? saved.isWorkDay : (status === 'work')
     days.push({
@@ -540,15 +596,13 @@ async function renderStats() {
       count: saved ? (saved.count || 0) : 0,
       isWorkDay,
       status,
-      lastEditor: saved && saved.lastEditor && saved.lastEditor.length > 0
-        ? saved.lastEditor[saved.lastEditor.length - 1].name : ''
+      editHistory: saved ? (saved.editHistory || []) : []
     })
   }
 
   const workDays = days.filter(d => d.isWorkDay)
   const total = workDays.reduce((s, d) => s + d.count, 0)
   const avg = workDays.length > 0 ? Math.round(total / workDays.length) : 0
-  const today = formatDate(new Date())
 
   let html = `<div class="stat-cards">
     <div class="stat-card"><div class="val">${total}</div><div class="lbl">月度总份</div></div>
@@ -557,44 +611,56 @@ async function renderStats() {
   </div>`
 
   html += `<div class="month-table">
-    <div class="mt-head"><span>日期</span><span>性质</span><span>份数</span><span>编辑人</span></div>
-    ${days.map(d => {
+    <div class="mt-head"><span>日期</span><span>性质</span><span>份数</span><span>修改人</span></div>
+    ${days.filter(d => d.isWorkDay || d.count > 0).map(d => {
       const isToday = d.date === today
       const rowClass = d.isWorkDay ? 'work' : 'holiday'
       const finalClass = isToday ? rowClass + ' today-row' : rowClass
       const dayLabel = d.isWorkDay ? '班' : '休'
       const labelClass = d.isWorkDay ? 'work' : 'holiday'
+      // 历史编辑人：每人只显示最近一次，最多3人
+      const editorMap = {}
+      for (const r of d.editHistory) {
+        editorMap[r.name] = r.time
+      }
+      const editorHtml = Object.keys(editorMap).length > 0
+        ? Object.entries(editorMap).map(([name, time]) =>
+            `<span class="e-chip">${name}</span><span class="e-time">${time.split(' ')[1]}</span> `
+          ).join('')
+        : '<span style="color:#ddd">—</span>'
       return `<div class="mt-row ${finalClass}">
         <div class="mt-date"><span>${d.displayDate}</span><span style="margin-left:4px;color:#999;font-size:11px">${d.label}</span></div>
-        <div class="mt-label"><span class="status-tag ${labelClass}">${dayLabel}</span></div>
+        <div><span class="status-tag ${labelClass}" style="cursor:default">${dayLabel}</span></div>
         <div class="mt-count">${d.count}</div>
-        <div class="mt-editor">${d.lastEditor || '-'}</div>
+        <div class="mt-editors">${editorHtml}</div>
       </div>`
     }).join('')}
   </div>`
 
-  const editors = [...new Set(days.filter(d => d.lastEditor).map(d => d.lastEditor))]
-  if (editors.length > 0) {
-    html += `<div class="editor-list">本月编辑过的人：${editors.map(e => '<span class="editor-chip">' + e + '</span>').join('')}</div>`
+  // 本月所有编辑过的人
+  const allEditors = [...new Set(days.flatMap(d => d.editHistory.map(r => r.name)))]
+  if (allEditors.length > 0) {
+    html += `<div class="editor-list">本月编辑过的人：${allEditors.map(e => '<span class="editor-chip">' + e + '</span>').join('')}</div>`
   }
 
   document.getElementById('stats-content').innerHTML = html
+  renderMonthTabs()
 }
 
 // ===== CSV导出 =====
 function exportCSV() {
-  if (!editorName) { showNameModal(); return }
+  if (!isValidUser(editorName)) { showNameModal(); return }
   const monday = new Date(currentWeekMonday)
   const days = getWeekDays(monday)
-  const lines = ['日期,星期,性质,份数,备注,最后编辑']
+  const lines = ['日期,星期,性质,份数,备注,编辑历史']
   days.forEach(day => {
     const saved = getOrder(day.date)
     if (!saved) return
     const label = day.isWorkDay ? '班' : '休'
-    const lastEd = saved.lastEditor && saved.lastEditor.length > 0
-      ? saved.lastEditor[saved.lastEditor.length - 1].name + ' ' + saved.lastEditor[saved.lastEditor.length - 1].time
-      : ''
-    lines.push(day.date + ',' + day.label + ',' + label + ',' + saved.count + ',"' + (saved.note||'') + '","' + lastEd + '"')
+    const history = (saved.editHistory || [])
+      .map(r => r.name + '@' + r.time + '(' + r.action + ')')
+      .join(' | ')
+    lines.push(day.date + ',' + day.label + ',' + label + ',' + saved.count + ',"' + (saved.note||'') + '","' + history + '"')
   })
   const blob = new Blob(['\uFEFF' + lines.join('\n')], { type: 'text/csv;charset=utf-8' })
   const url = URL.createObjectURL(blob)
@@ -606,25 +672,43 @@ function exportCSV() {
   toast('导出成功')
 }
 
-// ===== 名字弹窗 =====
+// ===== 人员选择弹窗 =====
+function buildNameList() {
+  const container = document.getElementById('name-list')
+  container.innerHTML = ALLOWED_USERS.map(name =>
+    `<button class="name-btn" onclick="confirmName('${name}')">${name}</button>`
+  ).join('')
+}
+
 function showNameModal() {
   document.getElementById('name-modal').classList.add('show')
-  const inp = document.getElementById('name-input')
-  inp.value = editorName
-  inp.focus()
 }
-function confirmName() {
-  const name = document.getElementById('name-input').value.trim() || '匿名'
+
+function confirmName(name) {
   editorName = name
   localStorage.setItem('lunch_editor', name)
   document.getElementById('name-modal').classList.remove('show')
+  document.getElementById('current-user-name').textContent = name
+  toast('欢迎，' + name + '！')
+}
+
+function updateUserBar() {
+  const nameEl = document.getElementById('current-user-name')
+  nameEl.textContent = isValidUser(editorName) ? editorName : '未登录'
 }
 
 // ===== 初始化 =====
 async function init() {
+  buildNameList()
+  // 如果已有登录名且合法，直接恢复；否则弹窗
+  if (!isValidUser(editorName)) {
+    editorName = ''
+    localStorage.removeItem('lunch_editor')
+  }
+  updateUserBar()
   renderMonthTabs()
   await renderWeek()
-  if (!editorName) {
+  if (!isValidUser(editorName)) {
     setTimeout(showNameModal, 300)
   }
 }

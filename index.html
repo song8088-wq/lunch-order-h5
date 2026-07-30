@@ -144,10 +144,14 @@
   @keyframes fadeToast { 0%{opacity:0;transform:translate(-50%,-50%) scale(0.9)} 10%{opacity:1;transform:translate(-50%,-50%) scale(1)} 80%{opacity:1} 100%{opacity:0} }
 
   /* 月份选择栏 */
-  .month-tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
+  .month-tabs-wrap { position: relative; margin-bottom: 16px; }
+  .month-tabs { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
+  .month-tabs::-webkit-scrollbar { height: 3px; }
+  .month-tabs::-webkit-scrollbar-thumb { background: var(--orange); border-radius: 2px; }
   .month-tab { padding: 6px 14px; border-radius: 20px; font-size: 13px; background: var(--white); border: 1px solid var(--border); cursor: pointer; white-space: nowrap; flex-shrink: 0; }
   .month-tab.active { background: var(--orange); color: #fff; border-color: var(--orange); }
   .month-tab.current-month { border-color: var(--orange); color: var(--orange); }
+  .month-tabs-hint { text-align: center; font-size: 10px; color: #ccc; margin-top: 2px; }
 
   /* 月度统计卡片 */
   .stat-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 16px; }
@@ -230,9 +234,13 @@
 
 <!-- 月度统计页 -->
 <div class="page" id="page-stats">
-  <div class="month-tabs" id="month-tabs"></div>
+  <div class="month-tabs-wrap">
+    <div class="month-tabs" id="month-tabs"></div>
+    <div class="month-tabs-hint">← 左右滑动选择月份 →</div>
+  </div>
   <div class="filter-bar">
     <label class="filter-switch"><input type="checkbox" id="only-workday" onchange="renderStats()">仅看工作日</label>
+    <button class="batch-btn" onclick="refreshCloudData()" style="margin-left:auto">↻ 刷新云端</button>
   </div>
   <div id="stats-content"></div>
 </div>
@@ -374,6 +382,7 @@ let currentMonth = new Date().getMonth()
 let currentYear = new Date().getFullYear()
 let localCache = null
 let editingIdx = -1 // 正在直接编辑份数的日期索引
+let enterPressed = false // 标记是否按了Enter键
 
 function isValidUser(name) {
   return ALLOWED_USERS.includes(name)
@@ -520,7 +529,7 @@ async function renderWeek() {
     // 份数显示：正在编辑时显示输入框
     const numHtml = (editingIdx === i)
       ? `<input type="number" class="day-num-input" value="${day.count}" min="0" step="1"
-          onblur="commitCount(${i}, this.value)" onkeydown="if(event.key==='Enter')this.blur()"
+          onblur="commitCount(${i}, this.value)" onkeydown="onInputKeydown(event,${i})"
           autofocus>`
       : `<div class="day-num ${day.isWorkDay?'':'readonly'}" onclick="startEditCount(${i})">${day.count}</div>`
 
@@ -528,7 +537,8 @@ async function renderWeek() {
       <div class="day-left">
         <div class="day-name">${day.label}</div>
         <div class="day-date">${day.displayDate}</div>
-        <div class="status-tag ${statusClass}" id="status-tag-${i}" onclick="toggleStatus(${i})">${statusLabel}</div>
+        <div class="status-tag ${statusClass}" id="status-tag-${i}" onclick="toggleStatus(${i})" 
+          title="${day.isWorkDay ? '工作日/调休补班日 - 份数计入统计' : '周末/节假日 - 可填但不计入统计'}">${statusLabel}</div>
       </div>
       <div class="day-center">
         <button class="btn-count btn-m" onclick="changeCount(${i},-1)">−</button>
@@ -573,8 +583,17 @@ function startEditCount(idx) {
   renderWeek()
 }
 
+function onInputKeydown(e, idx) {
+  if (e.key === 'Enter') {
+    enterPressed = true
+    e.target.blur()
+  }
+}
+
 function commitCount(idx, val) {
   editingIdx = -1
+  const shouldAdvance = enterPressed
+  enterPressed = false
   const monday = new Date(currentWeekMonday)
   const days = getWeekDays(monday)
   // 校验：仅允许≥0整数
@@ -589,6 +608,10 @@ function commitCount(idx, val) {
   const isWorkDay = saved && saved.isWorkDay !== undefined ? saved.isWorkDay : days[idx].isWorkDay
   setOrder(days[idx].date, { count, note, isWorkDay })
   renderWeek()
+  // Enter键自动跳到下一天
+  if (shouldAdvance && idx < 6) {
+    setTimeout(() => startEditCount(idx + 1), 50)
+  }
 }
 
 function changeCount(idx, delta) {
@@ -705,6 +728,7 @@ function switchTab(tab) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
   document.getElementById('page-' + tab).classList.add('active')
   if (tab === 'stats') renderStats()
+  else if (tab === 'week') renderWeek()
 }
 
 // 全年12个月
@@ -727,6 +751,12 @@ function renderMonthTabs() {
     const currentClass = isCurrentMonth && !active ? 'current-month' : ''
     return `<div class="month-tab ${active} ${currentClass}" onclick="selectMonth(${m.y},${m.m})">${m.m+1}月</div>`
   }).join('')
+  // 自动滚动到当前选中月份
+  const container = document.getElementById('month-tabs')
+  const activeTab = container.querySelector('.month-tab.active')
+  if (activeTab) {
+    activeTab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+  }
 }
 
 function selectMonth(y, m) {
@@ -743,10 +773,19 @@ function selectMonth(y, m) {
   renderStats()
 }
 
+async function refreshCloudData() {
+  localCache = null
+  await renderStats()
+  toast('已刷新云端最新数据')
+}
+
 async function renderStats() {
-  const data = await loadFromCloud()
-  allOrders = data
-  localCache = JSON.parse(JSON.stringify(data))
+  if (!localCache) {
+    allOrders = await loadFromCloud()
+    localCache = JSON.parse(JSON.stringify(allOrders))
+  } else {
+    allOrders = Object.assign({}, localCache)
+  }
 
   const today = formatDate(new Date())
   const first = new Date(currentYear, currentMonth, 1)

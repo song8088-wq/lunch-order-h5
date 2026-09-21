@@ -71,6 +71,8 @@
   .batch-btn { padding: 6px 12px; border: 1px solid var(--border); background: var(--white); border-radius: 20px; font-size: 12px; color: var(--text-light); cursor: pointer; white-space: nowrap; }
   .batch-btn:active { background: var(--orange-light); border-color: var(--orange); color: var(--orange); }
   .batch-btn.danger { color: var(--red); border-color: var(--red-bg); }
+  .unsaved-badge { font-size: 11px; color: var(--orange); font-weight: 600; align-self: center; margin-left: auto; animation: pulseDot 1.6s ease-in-out infinite; }
+  @keyframes pulseDot { 0%,100%{opacity:1} 50%{opacity:.35} }
 
   /* 日期卡片 */
   .day-card { background: var(--white); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 10px; box-shadow: var(--shadow); display: flex; align-items: flex-start; gap: 12px; }
@@ -217,6 +219,7 @@
     <button class="batch-btn" onclick="batchSetStatus(true)">本周全设为「班」</button>
     <button class="batch-btn" onclick="batchSetStatus(false)">本周全设为「休」</button>
     <button class="batch-btn danger" onclick="clearWeek()">清空本周数据</button>
+    <span class="unsaved-badge" id="unsaved-badge" style="display:none">● 有未保存修改</span>
   </div>
   <div id="week-days"><div class="loading">加载中...</div></div>
   <div class="summary">
@@ -228,7 +231,7 @@
   <div class="legend">
     <div class="legend-item"><div class="dot dot-work"></div><span>绿色「班」= 调休上班日，计入统计</span></div>
     <div class="legend-item"><div class="dot dot-holiday"></div><span>红色「休」= 节假日/周末，可填但不计入</span></div>
-    <div class="legend-item"><span style="font-size:12px;color:#bbb;">点击数字可直接编辑 · 点击「班/休」切换</span></div>
+    <div class="legend-item"><span style="font-size:12px;color:#bbb;">点击数字可直接编辑 · 点击「班/休」切换 · 改完记得点「保存本周」</span></div>
   </div>
 </div>
 
@@ -284,6 +287,10 @@
     <div class="guide-item">
       <div class="guide-icon g3">±</div>
       <div class="guide-text"><b>编辑份数</b>：点 ± 按钮加减，或直接点击数字输入<br><b>日均</b> = 本周总份 ÷ 工作天数</div>
+    </div>
+    <div class="guide-item">
+      <div class="guide-icon g1">✓</div>
+      <div class="guide-text"><b>先改后存</b>：改动不会实时留痕，点「保存本周」后统一记录——谁、共增减几份、日期时间</div>
     </div>
     <div class="guide-item">
       <div class="guide-icon g3">▾</div>
@@ -369,6 +376,13 @@ function fmtTime(d) {
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0')
     + ' ' + String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0')
 }
+// 记录里显示：'2026-09-21 09:40' -> '09-21 09:40'
+function shortTime(t) {
+  if (!t) return ''
+  const parts = t.split(' ')
+  const md = parts[0] && parts[0].length >= 10 ? parts[0].slice(5) : parts[0]
+  return parts[1] ? md + ' ' + parts[1] : md
+}
 function syncIndicator(show) {
   const el = document.getElementById('sync-indicator')
   el.classList.toggle('show', show)
@@ -383,6 +397,7 @@ let currentYear = new Date().getFullYear()
 let localCache = null
 let editingIdx = -1 // 正在直接编辑份数的日期索引
 let enterPressed = false // 标记是否按了Enter键
+let pendingEdits = {} // 本次未保存的修改：date -> {baseCount, baseIsWorkDay, baseNote}
 
 function isValidUser(name) {
   return ALLOWED_USERS.includes(name)
@@ -447,30 +462,67 @@ function getOrder(date) {
   return allOrders[date] || null
 }
 
+// 取某天当前"有效"班休状态（已保存值优先，否则按日历推算）
+function effectiveIsWorkDay(date) {
+  const cur = allOrders[date]
+  if (cur && cur.isWorkDay !== undefined) return cur.isWorkDay
+  const p = date.split('-')
+  return getDayStatus(date, new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]))) === 'work'
+}
+
+// 本次会话首次编辑某天时，快照"基线"（= 上次保存的值）
+function ensurePending(date) {
+  if (!pendingEdits[date]) {
+    const cur = allOrders[date] || {}
+    pendingEdits[date] = {
+      baseCount: cur.count || 0,
+      baseIsWorkDay: effectiveIsWorkDay(date),
+      baseNote: cur.note || ''
+    }
+  }
+}
+
+// 应用一次编辑：只改内存数据，不写修改记录
 function setOrder(date, data) {
-  const now = new Date()
-  const t = fmtTime(now)
+  ensurePending(date)
   const prev = allOrders[date] ? JSON.parse(JSON.stringify(allOrders[date])) : {}
-  const history = prev.editHistory || []
-  let action = ''
-  if (data.count !== undefined) {
-    const prevCount = prev.count || 0
-    if (data.count > prevCount) action = '+' + (data.count - prevCount) + '份'
-    else if (data.count < prevCount) action = '-' + (prevCount - data.count) + '份'
-    else action = '改备注'
-  }
-  if (data.isWorkDay !== undefined && data.isWorkDay !== prev.isWorkDay) {
-    action = data.isWorkDay ? '改为班' : '改为休'
-  }
-  const lastRecord = history[history.length - 1]
-  if (lastRecord && lastRecord.name === editorName && lastRecord.time === t) {
-    lastRecord.action = action || lastRecord.action
-  } else {
-    history.push({ name: editorName, time: t, action: action || '编辑' })
-  }
-  allOrders[date] = Object.assign({}, prev, data, { editHistory: history, updatedAt: now.toISOString() })
+  allOrders[date] = Object.assign({}, prev, data, { updatedAt: new Date().toISOString() })
   if (!localCache) localCache = {}
   localCache[date] = allOrders[date]
+}
+
+// 保存时统一结算：把本次每个日期的净增减，汇总成"一条记录/人/天"
+function flushPendingEdits() {
+  const dates = Object.keys(pendingEdits)
+  if (dates.length === 0) return 0
+  const t = fmtTime(new Date())
+  let recorded = 0
+  for (const date of dates) {
+    const base = pendingEdits[date]
+    const cur = allOrders[date]
+    if (!cur) continue
+    const curCount = cur.count || 0
+    const curIsWorkDay = effectiveIsWorkDay(date)
+    const curNote = cur.note || ''
+    const parts = []
+    if (curIsWorkDay !== base.baseIsWorkDay) parts.push(curIsWorkDay ? '改为班' : '改为休')
+    const delta = curCount - base.baseCount
+    if (delta > 0) parts.push('+' + delta + '份')
+    else if (delta < 0) parts.push(delta + '份')
+    if (curNote !== base.baseNote) parts.push('改备注')
+    if (parts.length === 0) continue // 无实际改动，不记
+    const history = (cur.editHistory || []).slice()
+    history.push({ name: editorName, time: t, action: parts.join(' · ') })
+    allOrders[date] = Object.assign({}, cur, { editHistory: history })
+    if (localCache) localCache[date] = allOrders[date]
+    recorded++
+  }
+  pendingEdits = {}
+  return recorded
+}
+
+function hasUnsaved() {
+  return Object.keys(pendingEdits).length > 0
 }
 
 // ===== 界面渲染 =====
@@ -520,7 +572,7 @@ async function renderWeek() {
             `<div class="editor-record">
               <span class="editor-name-chip">${r.name}</span>
               <span class="editor-action">${r.action || '编辑'}</span>
-              <span class="editor-time">${r.time.split(' ')[1]}</span>
+              <span class="editor-time">${shortTime(r.time)}</span>
             </div>`
           ).join('')}
         </div>`
@@ -574,6 +626,12 @@ function updateSummary() {
   document.getElementById('avg-count').textContent = workDays.length > 0 ? Math.round(total / workDays.length) : 0
   // 空状态提示
   document.getElementById('empty-hint').style.display = (total === 0 && workDays.length > 0) ? 'block' : 'none'
+  updateSaveBadge()
+}
+
+function updateSaveBadge() {
+  const el = document.getElementById('unsaved-badge')
+  if (el) el.style.display = hasUnsaved() ? 'inline-block' : 'none'
 }
 
 // ===== 交互 =====
@@ -687,38 +745,51 @@ function clearWeek() {
       if (localCache) delete localCache[day.date]
     }
   })
+  pendingEdits = {}
   renderWeek()
   toast('本周数据已清空')
 }
 
 async function saveData() {
   if (!isValidUser(editorName)) { showNameModal(); return }
+  const recorded = flushPendingEdits()
   await saveToCloud(allOrders)
   localCache = JSON.parse(JSON.stringify(allOrders))
-  toast(editorName + ' 已保存 ✓')
+  toast(editorName + ' 已保存 ✓' + (recorded > 0 ? '（已记录 ' + recorded + ' 天改动）' : ''))
   renderWeek()
 }
 
 function goToday() {
+  if (!confirmLeaveUnsaved()) return
   currentWeekMonday = getMondayOf(new Date())
   localCache = null
+  pendingEdits = {}
   renderWeek()
   toast('已回到本周')
 }
 
 function prevWeek() {
+  if (!confirmLeaveUnsaved()) return
   const d = new Date(currentWeekMonday)
   d.setDate(d.getDate() - 7)
   currentWeekMonday = d
   localCache = null
+  pendingEdits = {}
   renderWeek()
 }
 function nextWeek() {
+  if (!confirmLeaveUnsaved()) return
   const d = new Date(currentWeekMonday)
   d.setDate(d.getDate() + 7)
   currentWeekMonday = d
   localCache = null
+  pendingEdits = {}
   renderWeek()
+}
+
+function confirmLeaveUnsaved() {
+  if (!hasUnsaved()) return true
+  return confirm('有未保存的修改，离开后将丢失。建议先点「保存本周」。确定要离开吗？')
 }
 
 // ===== 月度统计 =====
@@ -760,14 +831,17 @@ function renderMonthTabs() {
 }
 
 function selectMonth(y, m) {
-  currentYear = y; currentMonth = m
   // 月份切换联动：本周订餐页跳到该月的当前周
   const monday = getMondayOf(new Date())
-  if (monday.getFullYear() !== y || monday.getMonth() !== m) {
+  const willReset = (monday.getFullYear() !== y || monday.getMonth() !== m)
+  if (willReset && !confirmLeaveUnsaved()) return
+  currentYear = y; currentMonth = m
+  if (willReset) {
     // 如果选的不是当前所在月，跳到该月第一个周一
     const firstDay = new Date(y, m, 1)
     currentWeekMonday = getMondayOf(firstDay)
     localCache = null
+    pendingEdits = {}
   }
   renderMonthTabs()
   renderStats()
@@ -833,10 +907,10 @@ async function renderStats() {
         const dayLabel = d.isWorkDay ? '班' : '休'
         const labelClass = d.isWorkDay ? 'work' : 'holiday'
         const editorMap = {}
-        for (const r of d.editHistory) { editorMap[r.name] = r.time }
+        for (const r of d.editHistory) { editorMap[r.name] = { time: r.time, action: r.action } }
         const editorHtml = Object.keys(editorMap).length > 0
-          ? Object.entries(editorMap).map(([name, time]) =>
-              `<span class="e-chip">${name}</span><span class="e-time">${time.split(' ')[1]}</span> `
+          ? Object.entries(editorMap).map(([name, info]) =>
+              `<span class="e-chip">${name}</span><span class="e-time">${shortTime(info.time)}</span> `
             ).join('')
           : '<span style="color:#ddd">—</span>'
         return `<div class="mt-row ${finalClass}">
